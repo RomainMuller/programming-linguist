@@ -1,0 +1,47 @@
+{
+  "name": "programming-linguist",
+  "description": "A Construct-based model to generate source code",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "main": "lib/index.ts",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc --build && npm run lint",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "test": "jest"
+  },
+  "dependencies": {
+    "constructs": "^3.0.4",
+    "typescript": "^3.9.6"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.4",
+    "@typescript-eslint/eslint-plugin": "^3.6.0",
+    "@typescript-eslint/parser": "^3.6.0",
+    "eslint": "^7.4.0",
+    "eslint-plugin-jest": "^23.18.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.1.0",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.1.1"
+  },
+  "author": {
+    "name": "Romain Marcadier",
+    "url": "https://github.com/RomainMuller"
+  },
+  "homepage": "https://github.com/RomainMuller/programming-linguist",
+  "repository": {
+    "url": "https://github.com/RomainMuller/programming-linguist.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RomainMuller/programming-linguist/issues"
+  },
+  "keywords": [
+    "constructs",
+    "code-generation",
+    "developer-tools"
+  ],
+  "engines": {
+    "node": ">= 10.0.3"
+  }
+}

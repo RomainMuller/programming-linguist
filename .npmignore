@@ -1,0 +1,15 @@
+/.github
+/coverage
+/src
+
+/lib/**/*.spec.d.ts
+/lib/**/*.spec.js
+/lib/**/spec.d.ts
+/lib/**/spec.js
+
+.*
+*.tgz
+*.tsbuildinfo
+
+jest.config.js
+tsconfig.json
