@@ -23,5 +23,5 @@
     "stripInternal": true,
     "target": "ES2019",
   },
-  "include": ["**/*.ts"]
+  "include": ["src/**/*.ts"]
 }
