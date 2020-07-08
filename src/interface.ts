@@ -8,7 +8,7 @@ import {
   SyntaxKind,
 } from 'typescript';
 
-import { documentable, IDocumentable } from './documentable';
+import { documentable, IDocumentable } from './private/documentable';
 import { Identifier } from './identifier';
 import { Statement } from './private/statement';
 import { SourceFile } from './source-file';
