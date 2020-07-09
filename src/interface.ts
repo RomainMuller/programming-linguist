@@ -1,17 +1,22 @@
+import { Node } from 'constructs';
 import {
   createExpressionWithTypeArguments,
-  createInterfaceDeclaration,
   createHeritageClause,
+  createInterfaceDeclaration,
   createModifier,
+  createTypeReferenceNode,
   Modifier,
   Statement as TypeScriptStatement,
   SyntaxKind,
+  TypeReferenceNode,
 } from 'typescript';
 
 import { documentable, IDocumentable } from './private/documentable';
 import { Identifier } from './identifier';
 import { Statement } from './private/statement';
 import { SourceFile } from './source-file';
+import { IType } from './private/type';
+import { TypeElement } from './private/type-member';
 
 export interface InterfaceProps {
   readonly documentation?: string;
@@ -33,7 +38,12 @@ export class Interface extends Statement implements IInterface {
     this.documentation = props.documentation;
     this.exported = props.exported ?? false;
     this.extends = props.extends ?? [];
-    this.name = props.name ? Identifier.from(props.name) : Identifier.uniqueIdentifier(id);
+    this.name = props.name ? Identifier.from(props.name) : Identifier.createUnique(id);
+  }
+
+  /** @internal */
+  public get node(): TypeReferenceNode {
+    return createTypeReferenceNode(this.name.node, undefined);
   }
 
   /** @internal */
@@ -45,7 +55,7 @@ export class Interface extends Statement implements IInterface {
       this.name.node,
       undefined, // typeParameters
       this.heritageClauses, // heritageClauses
-      [], // members
+      this.members, // members
     );
   }
 
@@ -61,6 +71,12 @@ export class Interface extends Statement implements IInterface {
     ];
   }
 
+  private get members() {
+    return Node.of(this)
+      .children.map(TypeElement.requireTypeElement)
+      .map((elt) => elt.render());
+  }
+
   private get modifiers() {
     const tokens = new Array<Modifier['kind']>();
 
@@ -72,7 +88,7 @@ export class Interface extends Statement implements IInterface {
   }
 }
 
-export interface IInterface extends IDocumentable {
+export interface IInterface extends IDocumentable, IType {
   readonly exported: boolean;
   readonly extends: readonly IInterface[];
   readonly name: Identifier;

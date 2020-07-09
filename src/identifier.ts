@@ -8,7 +8,7 @@ export class Identifier {
     return value;
   }
 
-  public static uniqueIdentifier(text: string): Identifier {
+  public static createUnique(text: string): Identifier {
     return new Identifier(createUniqueName(text));
   }
 

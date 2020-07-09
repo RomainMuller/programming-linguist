@@ -2,7 +2,7 @@ import { Construct, IConstruct } from 'constructs';
 import type { SourceFile } from '../source-file';
 import type { Statement as TypeScriptStatement } from 'typescript';
 
-const STATEMENT_SYMBOL = Symbol.for('typescript-poet.Statement');
+const STATEMENT_SYMBOL = Symbol.for('programming-linguist.Statement');
 
 export abstract class Statement extends Construct {
   /** @internal */
@@ -18,6 +18,7 @@ export abstract class Statement extends Construct {
     return obj;
   }
 
+  /** @internal */
   private readonly [STATEMENT_SYMBOL]: boolean = true;
 
   /** @internal */
