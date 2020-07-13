@@ -57,6 +57,15 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
+      - name: Diff Test
+        run: |-
+          MODIFIED_FILES=$(git status --porcelain=v2)
+          if [ ! -z "${MODIFIED_FILES}" ]; then
+            echo "Found uncommitted changes:"
+            echo "${MODIFIED_FILES}"
+            exit -1
+          fi
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:
@@ -154,6 +163,27 @@ jobs:
 
           echo "::set-output name=tag::${TAG}"
           echo "::set-output name=version::${VERSION}"
+
+      - name: Scope Package
+        run: |-
+          node -e <<-EOF
+            const fs = require('fs');
+
+            const md = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf-8' }));
+
+            md.name = `@${{ github.repository_owner }}/${md.name.replace(/^@[^/]+\//, '')}`;
+
+            delete md.devDependencies;
+
+            delete md.scripts.build;
+            delete md.scripts.lint;
+            delete md.scripts.test;
+            if (Object.keys(md.scripts).length === 0) {
+              delete md.scripts;
+            }
+
+            fs.writeFileSync('./package.json', JSON.stringify(md, null, 2));
+          EOF
 
       - name: Publish to GitHub
         run: |-
