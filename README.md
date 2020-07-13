@@ -1,5 +1,9 @@
 # `programming-linguist`
 
+![Main](https://github.com/RomainMuller/programming-linguist/workflows/Main/badge.svg)
+![Maintainability](https://api.codeclimate.com/v1/badges/0c45248e1d1a979ba092/maintainability)
+![Test Coverage](https://api.codeclimate.com/v1/badges/0c45248e1d1a979ba092/test_coverage)
+
 A library to facilitate generation of TypeScript code from TypeScript/Javascript
 applications.
 

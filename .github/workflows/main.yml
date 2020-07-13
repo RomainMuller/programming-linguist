@@ -157,6 +157,6 @@ jobs:
 
       - name: Publish to GitHub
         run: |-
-          yarn publish --new-version ${{ steps.determine-version.version }} --tag ${{ steps.determine-version.tag }}
+          yarn publish --new-version "${{ steps.determine-version.outputs.version }}" --tag "${{ steps.determine-version.outputs.tag }}"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
