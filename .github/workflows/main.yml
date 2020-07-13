@@ -1,7 +1,11 @@
 ---
 name: Main
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+    pull_request: true
 
 jobs:
   build:
@@ -26,8 +30,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-
+          key: ${{ runner.os }}-node10-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |-
+            ${{ runner.os }}-node10-
+            ${{ runner.os }}-
 
       - name: Install
         run: |-
@@ -74,8 +80,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-
+          key: ${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |-
+            ${{ runner.os }}-node${{ matrix.node }}-
+            ${{ runner.os }}-
 
       - name: Install
         run: |-
@@ -84,3 +92,57 @@ jobs:
       - name: Test
         run: |-
           yarn test
+
+  publish:
+    if: github.event != 'pull_request'
+
+    needs: test
+    runs-on: ubuntu-latest
+    name: Publish
+
+    steps:
+      - name: Download
+        uses: actions/download-artifact@v2
+        with:
+          name: build-output
+
+      - name: Set up node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+          registry-url: https://npm.pkg.github.com
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |-
+            ${{ runner.os }}-node${{ matrix.node }}-
+            ${{ runner.os }}-
+
+      - name: Determine Version
+        id: determine-version
+        run: |-
+          BASE_VERSION=$(node -p 'require("./package.json").version')
+
+          if [ -z "${{ github.event.pull_request.number }}"]; then
+            TAG=latest
+            VERSION=${BASE_VERSION}.version')
+          else
+            TAG=pr-${{ github.event.pull_request.number }}
+            VERSION=${BASE_VERSION}.version')-${TAG}
+          fi
+
+          echo "::set-output name=tag::${TAG}"
+          echo "::set-output name=version::${VERSION}"
+
+      - name: Publish to GitHub
+        run: |-
+          yarn publish --new-version ${{ steps.determine-version.version }} --tag ${{ steps.determine-version.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
