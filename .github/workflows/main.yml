@@ -96,7 +96,7 @@ jobs:
           yarn test
 
   publish:
-    if: github.event != 'pull_request'
+    if: github.event_name != 'pull_request'
 
     needs: test
     runs-on: ubuntu-latest
@@ -130,7 +130,7 @@ jobs:
       - name: Determine Version
         id: determine-version
         run: |-
-          BASE_VERSION=$(node -p 'require("./package.json").version')
+          BASE_VERSION=$(node -p 'require("./package.json").version;')
 
           if [ -z "${{ github.event.pull_request.number }}"]; then
             TAG=latest
