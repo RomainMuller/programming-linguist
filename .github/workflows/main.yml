@@ -156,7 +156,7 @@ jobs:
         run: |-
           BASE_VERSION=$(node -p 'require("${{ github.workspace }}/package.json").version;')
 
-          if [ "${{ github.ref }}" == "main" ]; then
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "::set-output name=tag::next"
             echo "::set-output name=version::${BASE_VERSION}-pre.${{ github.sha }}"
           else
@@ -192,7 +192,7 @@ jobs:
           fs.writeFileSync('${{ github.workspace }}/package.json', data);
           EOS
 
-          echo "::set-output name=filename:$(npm pack)"
+          echo "::set-output name=filename::$(npm pack)"
 
       - name: Publish to GitHub
         run: |-
@@ -215,14 +215,14 @@ jobs:
           tag_name: v${{ steps.determine-version.outputs.version }}
           release_name: ${{ steps.determine-version.outputs.version }}
           draft: false
-          prerelease: ${{ github.ref == 'main' }}
+          prerelease: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Upload Release Assets
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_github_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ steps.prepare.outputs.filename }}
-          asset_name: ${{ steps.prepare.outputs.filename }}
           asset_content_type: application/tar+gzip
+          asset_name: ${{ steps.prepare.outputs.filename }}
+          asset_path: ${{ github.workspace }}/${{ steps.prepare.outputs.filename }}
+          upload_url: ${{ steps.create_github_release.outputs.upload_url }}
