@@ -16,7 +16,7 @@ jobs:
       matrix:
         node: ['10']
 
-    name: Build
+    name: Build (Node ${{ matrix.node }})
 
     steps:
       - name: Checkout
