@@ -12,6 +12,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['10']
 
     name: Build
 
@@ -22,7 +25,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v1
         with:
-          node-version: '10'
+          node-version: ${{ matrix.node }}
 
       - name: Locate Yarn cache directory
         id: yarn-cache-dir-path
@@ -32,9 +35,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-node10-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |-
-            ${{ runner.os }}-node10-
+            ${{ runner.os }}-node${{ matrix.node }}-
             ${{ runner.os }}-
 
       - name: Install
@@ -44,6 +47,15 @@ jobs:
       - name: Compile TypeScript
         run: |-
           yarn build
+
+      - name: Report Coverage
+        uses: paambaati/codeclimate-action@v2.6.0
+        with:
+          coverageCommand: |-
+            yarn test
+          coverageLocations: ${{ github.workspace }}/coverage/lcov.info:lcov
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
@@ -59,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ['10', '12', '14']
+        node: ['12', '14']
 
     name: Test (Node ${{ matrix.node }})
 
