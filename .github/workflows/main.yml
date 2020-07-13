@@ -5,8 +5,7 @@ on:
   push:
     branches:
       - master
-    pull_request:
-      - master
+  pull_request: true
 
 jobs:
   build:
