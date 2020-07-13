@@ -24,7 +24,8 @@ jobs:
         with:
           node-version: '10'
 
-      - name: Get yarn cache directory path
+      - &locate_yarn_cache_directory
+        name: Locate Yarn cache directory
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
 
@@ -74,9 +75,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - <<: *locate_yarn_cache_directory
 
       - name: Cache
         uses: actions/cache@v2
@@ -114,9 +113,7 @@ jobs:
           node-version: 10
           registry-url: https://npm.pkg.github.com
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - <<: *locate_yarn_cache_directory
 
       - name: Cache
         uses: actions/cache@v2
