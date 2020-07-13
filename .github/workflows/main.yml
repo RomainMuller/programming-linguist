@@ -146,10 +146,10 @@ jobs:
 
           if [ -z "${{ github.event.pull_request.number }}"]; then
             TAG=latest
-            VERSION=${BASE_VERSION}.version')
+            VERSION=${BASE_VERSION}+${{ github.sha }}
           else
             TAG=pr-${{ github.event.pull_request.number }}
-            VERSION=${BASE_VERSION}.version')-${TAG}
+            VERSION=${BASE_VERSION}-${TAG}
           fi
 
           echo "::set-output name=tag::${TAG}"
