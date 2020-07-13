@@ -71,8 +71,8 @@ jobs:
         with:
           name: build-output
           path: |-
-            ./
-            !./node_modules
+            ${{ github.workspace }}/
+            !${{ github.workspace }}/node_modules
 
   test:
     needs: build
@@ -154,27 +154,26 @@ jobs:
       - name: Determine Version
         id: determine-version
         run: |-
-          BASE_VERSION=$(node -p 'require("./package.json").version;')
+          BASE_VERSION=$(node -p 'require("${{ github.workspace }}/package.json").version;')
 
-          if [ -z "${{ github.event.pull_request.number }}"]; then
-            TAG=latest
-            VERSION=${BASE_VERSION}+${{ github.sha }}
+          if [ "${{ github.ref }}" == "main" ]; then
+            echo "::set-output name=tag::next"
+            echo "::set-output name=version::${BASE_VERSION}-pre.${{ github.sha }}"
           else
-            TAG=pr-${{ github.event.pull_request.number }}
-            VERSION=${BASE_VERSION}-${TAG}
+            echo "::set-output name=tag::latest"
+            echo "::set-output name=version::${BASE_VERSION}"
           fi
 
-          echo "::set-output name=tag::${TAG}"
-          echo "::set-output name=version::${VERSION}"
-
-      - name: Scope Package
+      - name: Prepare
+        id: prepare
         run: |-
           node <<-\EOS
           const fs = require('fs');
 
-          const md = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf-8' }));
+          const md = JSON.parse(fs.readFileSync('${{ github.workspace }}/package.json', { encoding: 'utf-8' }));
 
           md.name = `@${'${{ github.repository_owner }}'.toLowerCase()}/${md.name.replace(/^@[^/]+\//, '')}`;
+          md.version = '${{ steps.determine-version.outputs.version }}';
 
           delete md.devDependencies;
 
@@ -190,8 +189,10 @@ jobs:
 
           console.log(`Updating package.json to:\n${data}`);
 
-          fs.writeFileSync('./package.json', data);
+          fs.writeFileSync('${{ github.workspace }}/package.json', data);
           EOS
+
+          echo "::set-output name=filename:$(npm pack)"
 
       - name: Publish to GitHub
         run: |-
@@ -204,3 +205,24 @@ jobs:
             --tag "${{ steps.determine-version.outputs.tag }}"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        id: create_github_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.determine-version.outputs.version }}
+          release_name: ${{ steps.determine-version.outputs.version }}
+          draft: false
+          prerelease: ${{ "${{ github.ref }}" == "main" }}
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_github_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ steps.prepare.outputs.filename }}
+          asset_name: ${{ steps.prepare.outputs.filename }}
+          asset_content_type: application/tar+gzip
