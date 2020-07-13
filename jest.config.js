@@ -3,7 +3,7 @@ const { defaults: tsPreset } = require('ts-jest/presets');
 
 module.exports = {
   ...defaults,
-  collectCoverage: true,
+  collectCoverage: false,
   coverageReporters: ['lcov', 'text'],
   errorOnDeprecated: true,
   resetMocks: true,

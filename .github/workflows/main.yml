@@ -52,7 +52,7 @@ jobs:
         uses: paambaati/codeclimate-action@v2.6.0
         with:
           coverageCommand: |-
-            yarn test
+            yarn test:coverage
           coverageLocations: ${{ github.workspace }}/coverage/lcov.info:lcov
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
@@ -133,7 +133,10 @@ jobs:
         uses: actions/setup-node@v2.1.0
         with:
           node-version: 10
+          always-auth: true
           registry-url: https://npm.pkg.github.com
+          scope: '@${{ github.repository_owner }}'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Locate Yarn cache directory
         id: yarn-cache-dir-path
@@ -166,27 +169,38 @@ jobs:
 
       - name: Scope Package
         run: |-
-          node -e <<-EOF
-            const fs = require('fs');
+          node <<-\EOS
+          const fs = require('fs');
 
-            const md = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf-8' }));
+          const md = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf-8' }));
 
-            md.name = `@${{ github.repository_owner }}/${md.name.replace(/^@[^/]+\//, '')}`;
+          md.name = `@${'${{ github.repository_owner }}'.toLowerCase()}/${md.name.replace(/^@[^/]+\//, '')}`;
 
-            delete md.devDependencies;
+          delete md.devDependencies;
 
-            delete md.scripts.build;
-            delete md.scripts.lint;
-            delete md.scripts.test;
-            if (Object.keys(md.scripts).length === 0) {
-              delete md.scripts;
-            }
+          delete md.scripts.build;
+          delete md.scripts.lint;
+          delete md.scripts.test;
+          delete md.scripts['test:coverage'];
+          if (Object.keys(md.scripts).length === 0) {
+            delete md.scripts;
+          }
 
-            fs.writeFileSync('./package.json', JSON.stringify(md, null, 2));
-          EOF
+          const data = JSON.stringify(md, null, 2);
+
+          console.log(`Updating package.json to:\n${data}`);
+
+          fs.writeFileSync('./package.json', data);
+          EOS
 
       - name: Publish to GitHub
         run: |-
-          yarn publish --new-version "${{ steps.determine-version.outputs.version }}" --tag "${{ steps.determine-version.outputs.tag }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name  "${{ github.actor }}"
+
+          yarn publish                                                          \
+            --no-git-tag-version                                                \
+            --new-version "${{ steps.determine-version.outputs.version }}"      \
+            --tag "${{ steps.determine-version.outputs.tag }}"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
