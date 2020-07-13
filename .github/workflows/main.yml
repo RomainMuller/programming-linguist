@@ -6,11 +6,8 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: ['10', '12', '14']
 
-    name: Build (Node ${{ matrix.node }})
+    name: Build
 
     steps:
       - name: Checkout
@@ -19,13 +16,13 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: '10'
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - name: Build Cache
+      - name: Cache
         uses: actions/cache@v2
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -39,6 +36,50 @@ jobs:
       - name: Compile TypeScript
         run: |-
           yarn build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-output
+          path: |-
+            ./
+            !./node_modules
+
+  test:
+    needs: build
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['10', '12', '14']
+
+    name: Test (Node ${{ matrix.node }})
+
+    steps:
+      - name: Download
+        uses: actions/download-artifact@v2
+        with:
+          name: build-output
+
+      - name: Set up node
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-
+
+      - name: Install
+        run: |-
+          yarn install --frozen-lockfile
 
       - name: Test
         run: |-
