@@ -49,7 +49,7 @@ jobs:
           yarn build
 
       - name: Report Coverage
-        uses: paambaati/codeclimate-action@v2.6.0
+        uses: paambaati/codeclimate-action@v2.7.3
         with:
           coverageCommand: |-
             yarn test:coverage
