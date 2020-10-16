@@ -226,3 +226,18 @@ jobs:
           asset_name: ${{ steps.prepare.outputs.filename }}
           asset_path: ${{ github.workspace }}/${{ steps.prepare.outputs.filename }}
           upload_url: ${{ steps.create_github_release.outputs.upload_url }}
+
+  approve-dependabot:
+    name: Approve Dependabot
+    runs-on: ubuntu-latest
+    needs: [test]
+
+    if: github.event_name == 'pull_request' && (github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]')
+
+    steps:
+      - name: Request @dependabot auto-merge
+        uses: ahmadnassri/action-dependabot-auto-merge@v2
+        with:
+          command: 'squash and merge'
+          github-token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          target: minor
