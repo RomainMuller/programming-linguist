@@ -1,6 +1,6 @@
 import { Construct, ISynthesisSession, Node } from 'constructs';
 import { join } from 'path';
-import { createSourceFile, updateSourceFileNode, Printer, ScriptKind, ScriptTarget } from 'typescript';
+import { createSourceFile, factory, Printer, ScriptKind, ScriptTarget } from 'typescript';
 import { FileSystem } from './file-system';
 import { Statement } from './private/statement';
 import { Project } from './project';
@@ -21,11 +21,11 @@ export class SourceFile extends Construct {
   protected onSynthesize(session: ISynthesisSession): void {
     const fileName = join(session.outdir, this.fileName);
 
-    const sourceFile = updateSourceFileNode(
+    const sourceFile = factory.updateSourceFile(
       createSourceFile(fileName, '', ScriptTarget.Latest, true, ScriptKind.TS),
       Node.of(this)
         .children.map(Statement.requireStatement)
-        .map((stmt) => stmt.render()),
+        .map((stmt) => stmt.render(factory)),
     );
 
     const printer: Printer = session['printer'];

@@ -1,15 +1,5 @@
 import { Node } from 'constructs';
-import {
-  createExpressionWithTypeArguments,
-  createHeritageClause,
-  createInterfaceDeclaration,
-  createModifier,
-  createTypeReferenceNode,
-  Modifier,
-  Statement as TypeScriptStatement,
-  SyntaxKind,
-  TypeReferenceNode,
-} from 'typescript';
+import { Modifier, NodeFactory, Statement as TypeScriptStatement, SyntaxKind, TypeReferenceNode } from 'typescript';
 
 import { documentable, IDocumentable } from './private/documentable';
 import { Identifier } from './identifier';
@@ -42,49 +32,49 @@ export class Interface extends Statement implements IInterface {
   }
 
   /** @internal */
-  public get node(): TypeReferenceNode {
-    return createTypeReferenceNode(this.name.node, undefined);
+  public node(factory: NodeFactory): TypeReferenceNode {
+    return factory.createTypeReferenceNode(this.name.node(factory), undefined);
   }
 
   /** @internal */
   @documentable
-  public render(): TypeScriptStatement {
-    return createInterfaceDeclaration(
+  public render(factory: NodeFactory): TypeScriptStatement {
+    return factory.createInterfaceDeclaration(
       undefined, // decorators
-      this.modifiers,
-      this.name.node,
+      this.modifiers(factory),
+      this.name.node(factory),
       undefined, // typeParameters
-      this.heritageClauses, // heritageClauses
-      this.members, // members
+      this.heritageClauses(factory),
+      this.members(factory),
     );
   }
 
-  private get heritageClauses() {
+  private heritageClauses(factory: NodeFactory) {
     if (this.extends.length == 0) {
       return undefined;
     }
     return [
-      createHeritageClause(
+      factory.createHeritageClause(
         SyntaxKind.ExtendsKeyword,
-        this.extends.map((base) => createExpressionWithTypeArguments(undefined, base.name.node)),
+        this.extends.map((base) => factory.createExpressionWithTypeArguments(base.name.node(factory), undefined)),
       ),
     ];
   }
 
-  private get members() {
+  private members(factory: NodeFactory) {
     return Node.of(this)
       .children.map(TypeElement.requireTypeElement)
-      .map((elt) => elt.render());
+      .map((elt) => elt.render(factory));
   }
 
-  private get modifiers() {
+  private modifiers(factory: NodeFactory) {
     const tokens = new Array<Modifier['kind']>();
 
     if (this.exported) {
       tokens.push(SyntaxKind.ExportKeyword);
     }
 
-    return tokens.map(createModifier);
+    return tokens.map(factory.createModifier.bind(factory));
   }
 }
 

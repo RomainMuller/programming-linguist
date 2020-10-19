@@ -1,4 +1,4 @@
-import { createMethodSignature, MethodSignature as TypeScriptMethodSignature } from 'typescript';
+import { MethodSignature as TypeScriptMethodSignature, NodeFactory } from 'typescript';
 
 import { ArrayType } from './array-type';
 import { Interface } from './interface';
@@ -45,15 +45,16 @@ export class MethodSignature extends TypeElement implements IDocumentable {
 
   /** @internal */
   @documentable
-  public render(): TypeScriptMethodSignature {
-    return createMethodSignature(
+  public render(factory: NodeFactory): TypeScriptMethodSignature {
+    return factory.createMethodSignature(
+      [],
+      this.name.node(factory),
+      undefined,
       undefined,
       this.parameters.map((param, index) =>
-        param.render({ variadic: index === this.parameters.length - 1 && this.variadic }),
+        param.render(factory, { variadic: index === this.parameters.length - 1 && this.variadic }),
       ),
-      this.returnType.node,
-      this.name.node,
-      undefined,
+      this.returnType.node(factory),
     );
   }
 }

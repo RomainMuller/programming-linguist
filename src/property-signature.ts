@@ -1,11 +1,4 @@
-import {
-  createModifier,
-  createPropertySignature,
-  createToken,
-  Modifier,
-  PropertySignature as TypeScriptPropertySignature,
-  SyntaxKind,
-} from 'typescript';
+import { Modifier, NodeFactory, PropertySignature as TypeScriptPropertySignature, SyntaxKind } from 'typescript';
 
 import { Identifier } from './identifier';
 import { Interface } from './interface';
@@ -40,23 +33,22 @@ export class PropertySignature extends TypeElement implements IDocumentable {
 
   /** @internal */
   @documentable
-  public render(): TypeScriptPropertySignature {
-    return createPropertySignature(
-      this.modifiers,
-      this.name.node,
-      this.optional ? createToken(SyntaxKind.QuestionToken) : undefined,
-      this.type.node,
-      undefined,
+  public render(factory: NodeFactory): TypeScriptPropertySignature {
+    return factory.createPropertySignature(
+      this.modifiers(factory),
+      this.name.node(factory),
+      this.optional ? factory.createToken(SyntaxKind.QuestionToken) : undefined,
+      this.type.node(factory),
     );
   }
 
-  private get modifiers() {
+  private modifiers(factory: NodeFactory) {
     const result = new Array<Modifier['kind']>();
 
     if (this.readonly) {
       result.push(SyntaxKind.ReadonlyKeyword);
     }
 
-    return result.map(createModifier);
+    return result.map(factory.createModifier.bind(factory));
   }
 }

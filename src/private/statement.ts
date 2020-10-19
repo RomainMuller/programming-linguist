@@ -1,6 +1,6 @@
 import { Construct, IConstruct } from 'constructs';
 import type { SourceFile } from '../source-file';
-import type { Statement as TypeScriptStatement } from 'typescript';
+import type { NodeFactory, Statement as TypeScriptStatement } from 'typescript';
 
 const STATEMENT_SYMBOL = Symbol.for('programming-linguist.Statement');
 
@@ -27,5 +27,5 @@ export abstract class Statement extends Construct {
   }
 
   /** @internal */
-  public abstract render(): TypeScriptStatement;
+  public abstract render(factory: NodeFactory): TypeScriptStatement;
 }
