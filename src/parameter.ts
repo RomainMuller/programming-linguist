@@ -1,4 +1,4 @@
-import { createParameter, ParameterDeclaration, createToken, SyntaxKind, Modifier } from 'typescript';
+import { ParameterDeclaration, SyntaxKind, NodeFactory } from 'typescript';
 
 import { Identifier } from './identifier';
 import { IType } from './private/type';
@@ -21,21 +21,15 @@ export class Parameter implements IParameter {
   }
 
   /** @internal */
-  public render({ variadic }: { readonly variadic: boolean }): ParameterDeclaration {
-    return createParameter(
+  public render(factory: NodeFactory, { variadic }: { readonly variadic: boolean }): ParameterDeclaration {
+    return factory.createParameterDeclaration(
       undefined,
-      this.modifiers,
-      variadic ? createToken(SyntaxKind.DotDotDotToken) : undefined,
-      this.name.node,
-      this.optional ? createToken(SyntaxKind.QuestionToken) : undefined,
-      this.type.node,
-      undefined,
+      [],
+      variadic ? factory.createToken(SyntaxKind.DotDotDotToken) : undefined,
+      this.name.node(factory),
+      this.optional ? factory.createToken(SyntaxKind.QuestionToken) : undefined,
+      this.type.node(factory),
     );
-  }
-
-  /** @internal */
-  protected get modifiers(): Modifier[] {
-    return [];
   }
 }
 
@@ -45,5 +39,5 @@ export interface IParameter {
   readonly type: IType;
 
   /** @internal */
-  render(opts: { readonly variadic: boolean }): ParameterDeclaration;
+  render(factory: NodeFactory, opts: { readonly variadic: boolean }): ParameterDeclaration;
 }

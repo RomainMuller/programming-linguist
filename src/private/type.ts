@@ -1,6 +1,8 @@
-import { TypeNode } from 'typescript';
+import { NodeFactory, TypeNode } from 'typescript';
 
 export interface IType {
   /** @internal */
-  readonly node: TypeNode;
+  node(factory: NodeFactory): TypeNode;
 }
+
+export type TypeNodeFactory = (factory: NodeFactory) => TypeNode;

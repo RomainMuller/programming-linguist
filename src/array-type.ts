@@ -1,4 +1,4 @@
-import { createArrayTypeNode, createTypeOperatorNode, SyntaxKind, TypeNode, TypeOperatorNode } from 'typescript';
+import { NodeFactory, SyntaxKind, TypeNode, TypeOperatorNode } from 'typescript';
 
 import { IType } from './private/type';
 
@@ -19,8 +19,8 @@ export class ArrayType implements IType {
   protected constructor(public readonly elementType: IType) {}
 
   /** @internal */
-  public get node(): TypeNode {
-    return createArrayTypeNode(this.elementType.node);
+  public node(factory: NodeFactory): TypeNode {
+    return factory.createArrayTypeNode(this.elementType.node(factory));
   }
 }
 
@@ -30,7 +30,7 @@ export class ReadonlyArrayType extends ArrayType {
   }
 
   /** @internal */
-  public get node(): TypeOperatorNode {
-    return createTypeOperatorNode(SyntaxKind.ReadonlyKeyword, super.node);
+  public node(factory: NodeFactory): TypeOperatorNode {
+    return factory.createTypeOperatorNode(SyntaxKind.ReadonlyKeyword, super.node(factory));
   }
 }

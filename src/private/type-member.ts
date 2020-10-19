@@ -1,6 +1,6 @@
 import { Identifier } from '../identifier';
 
-import { TypeElement as TypeScriptTypeElement } from 'typescript';
+import { NodeFactory, TypeElement as TypeScriptTypeElement } from 'typescript';
 import { Construct, IConstruct } from 'constructs';
 
 const TYPE_ELEMENT_SYMBOL = Symbol.for('programming-linguist.TypeElement');
@@ -25,5 +25,5 @@ export abstract class TypeElement extends Construct {
   public abstract readonly name: Identifier;
 
   /** @internal */
-  public abstract render(): TypeScriptTypeElement;
+  public abstract render(factory: NodeFactory): TypeScriptTypeElement;
 }

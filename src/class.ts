@@ -1,13 +1,4 @@
-import {
-  createModifier,
-  ClassDeclaration,
-  createClassDeclaration,
-  Modifier,
-  HeritageClause,
-  createHeritageClause,
-  SyntaxKind,
-  createExpressionWithTypeArguments,
-} from 'typescript';
+import { ClassDeclaration, Modifier, HeritageClause, SyntaxKind, NodeFactory } from 'typescript';
 
 import { Identifier } from './identifier';
 import { IDocumentable, documentable } from './private/documentable';
@@ -45,33 +36,35 @@ export class Class extends Statement implements IClass {
 
   /** @internal */
   @documentable
-  public render(): ClassDeclaration {
-    return createClassDeclaration(
+  public render(factory: NodeFactory): ClassDeclaration {
+    return factory.createClassDeclaration(
       undefined,
-      this.modifiers,
-      this.name.node,
+      this.modifiers(factory),
+      this.name.node(factory),
       undefined,
-      this.heritageClauses,
-      this.members,
+      this.heritageClauses(factory),
+      this.members(),
     );
   }
 
-  private get heritageClauses() {
+  private heritageClauses(factory: NodeFactory) {
     const clauses = new Array<HeritageClause>();
 
     if (this.base) {
       clauses.push(
-        createHeritageClause(SyntaxKind.ExtendsKeyword, [
-          createExpressionWithTypeArguments(undefined, this.base.name.node),
+        factory.createHeritageClause(SyntaxKind.ExtendsKeyword, [
+          factory.createExpressionWithTypeArguments(this.base.name.node(factory), undefined),
         ]),
       );
     }
 
     if (this.interfaces.length > 0) {
       clauses.push(
-        createHeritageClause(
+        factory.createHeritageClause(
           SyntaxKind.ImplementsKeyword,
-          this.interfaces.map((iface) => createExpressionWithTypeArguments(undefined, iface.name.node)),
+          this.interfaces.map((iface) =>
+            factory.createExpressionWithTypeArguments(iface.name.node(factory), undefined),
+          ),
         ),
       );
     }
@@ -79,11 +72,11 @@ export class Class extends Statement implements IClass {
     return clauses;
   }
 
-  private get members() {
+  private members() {
     return [];
   }
 
-  private get modifiers() {
+  private modifiers(factory: NodeFactory) {
     const result = new Array<Modifier['kind']>();
 
     if (this.abstract) {
@@ -94,7 +87,7 @@ export class Class extends Statement implements IClass {
       result.push(SyntaxKind.ExportKeyword);
     }
 
-    return result.map(createModifier);
+    return result.map(factory.createModifier.bind(factory));
   }
 }
 
