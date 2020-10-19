@@ -12,7 +12,7 @@
     "test:coverage": "jest --collect-coverage"
   },
   "dependencies": {
-    "constructs": "^3.0.4",
+    "constructs": "^3.0.24",
     "typescript": "^3.9.7"
   },
   "devDependencies": {
